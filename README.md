@@ -3,21 +3,21 @@
 A real-time data pipeline that ingests simulated e-commerce events, processes them through a medallion architecture (bronze → silver → gold), and serves aggregated analytics via Athena. All infrastructure is provisioned with Terraform and orchestrated with AWS Step Functions.
 
 ## Architecture
-Event Generator (Docker)
+Event Generator (Docker)  
 ▼
-Kinesis Data Stream
+Kinesis Data Stream  
 ▼
-Kinesis Firehose
+Kinesis Firehose  
 ▼
-S3 Bronze (raw JSON)
+S3 Bronze (raw JSON)  
 ▼
-AWS Step Functions Pipeline
-▼ 
-Glue Job: Bronze → Silver (Parquet)
-▼ 
-Glue Job: Silver → Gold (aggregated)
+AWS Step Functions Pipeline  
 ▼
-Glue Crawler (catalog gold tables)
+Glue Job: Bronze → Silver (Parquet)  
+▼
+Glue Job: Silver → Gold (aggregated)  
+▼
+Glue Crawler (catalog gold tables)  
 ▼
 Athena (SQL queries on gold tables)
 
