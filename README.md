@@ -4,21 +4,21 @@ A real-time data pipeline that ingests simulated e-commerce events, processes th
 
 ## Architecture
 Event Generator (Docker)  
-▼
+▼  
 Kinesis Data Stream  
-▼
+▼  
 Kinesis Firehose  
-▼
+▼  
 S3 Bronze (raw JSON)  
-▼
+▼  
 AWS Step Functions Pipeline  
-▼
+▼  
 Glue Job: Bronze → Silver (Parquet)  
-▼
+▼  
 Glue Job: Silver → Gold (aggregated)  
-▼
+▼  
 Glue Crawler (catalog gold tables)  
-▼
+▼  
 Athena (SQL queries on gold tables)
 
 ## Tech Stack
