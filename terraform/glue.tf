@@ -68,22 +68,8 @@ resource "aws_glue_catalog_database" "ecommerce_db" {
 }
 
 # ──────────────────────────────────────────────
-# Bronze Layer
+# Bronze → Silver
 # ──────────────────────────────────────────────
-
-resource "aws_glue_crawler" "bronze_crawler" {
-  database_name = aws_glue_catalog_database.ecommerce_db.name
-  name          = "ecommerce-bronze-crawler"
-  role          = aws_iam_role.glue_role.arn
-
-  s3_target {
-    path = "s3://${aws_s3_bucket.data_lake.id}/bronze/raw-events/"
-  }
-
-  tags = {
-    Project = "ecommerce-streaming"
-  }
-}
 
 resource "aws_s3_object" "glue_script" {
   bucket = aws_s3_bucket.data_lake.id
@@ -119,22 +105,8 @@ resource "aws_glue_job" "bronze_to_silver" {
 }
 
 # ──────────────────────────────────────────────
-# Silver Layer
+# Silver → Gold
 # ──────────────────────────────────────────────
-
-resource "aws_glue_crawler" "silver_crawler" {
-  database_name = aws_glue_catalog_database.ecommerce_db.name
-  name          = "ecommerce-silver-crawler"
-  role          = aws_iam_role.glue_role.arn
-
-  s3_target {
-    path = "s3://${aws_s3_bucket.data_lake.id}/silver/events/"
-  }
-
-  tags = {
-    Project = "ecommerce-streaming"
-  }
-}
 
 resource "aws_s3_object" "gold_script" {
   bucket = aws_s3_bucket.data_lake.id
@@ -170,7 +142,7 @@ resource "aws_glue_job" "silver_to_gold" {
 }
 
 # ──────────────────────────────────────────────
-# Gold Layer
+# Gold Crawler (makes gold tables queryable in Athena)
 # ──────────────────────────────────────────────
 
 resource "aws_glue_crawler" "gold_crawler" {
