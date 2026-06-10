@@ -14,7 +14,7 @@ Event Generator -> Kinesis (Bronze) -> Glue (Silver -> Gold) -> Glue Crawler -> 
 - **Analytics:** Amazon Athena
 - **Monitoring:** CloudWatch Alarms, SNS email alerts
 - **Infrastructure:** Terraform
-- **CI/CD:** GitHub Actions (terraform validate + plan)
+- **CI:** GitHub Actions (terraform validate + plan)
 - **Containerization:** Docker, Docker Compose
 
 ## How It Works
