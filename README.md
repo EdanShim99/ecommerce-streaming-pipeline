@@ -3,7 +3,7 @@
 A real-time data pipeline that ingests simulated e-commerce events, processes them through a medallion architecture (bronze → silver → gold), and serves aggregated analytics via Athena. All infrastructure is provisioned with Terraform and orchestrated with AWS Step Functions.
 
 # Architecture
-Event Generator -> Kinesis (Bronze) -> Glue (Silver -> Gold) -> Glue Crawler -> Athena
+![E-Commerce Streaming Architecture](assets/architecture.png)
 
 # Tech Stack
 
