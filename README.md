@@ -5,6 +5,16 @@ A real-time data pipeline that ingests simulated e-commerce events, processes th
 # Architecture
 ![E-Commerce Streaming Architecture](assets/architecture.png)
 
+This project features the following:
+- Real-time ingestion via Kinesis Data Streams and Firehose
+- Raw events stored immutably in S3 (Bronze layer)
+- Scheduled ETL orchestration using AWS Step Functions
+- Incremental transformation into structured Parquet (Silver)
+- Business-level aggregations in the Gold layer
+- CloudWatch + SNS monitoring for failure alerts
+
+The ETL pipeline can be scheduled via EventBridge to be run hourly, but is disabled by default to reduce Glue costs.
+
 # Tech Stack
 
 - **Ingestion:** Kinesis Data Stream, Kinesis Firehose
