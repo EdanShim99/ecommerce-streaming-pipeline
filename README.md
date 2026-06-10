@@ -53,11 +53,11 @@ After the gold crawler catalogs the output, the three gold tables are immediatel
 ## Deployment
 
 ### 1. Clone the Repo
-git clone https://github.com/<your-username>/ecommerce-streaming.git
+git clone https://github.com/<your-username>/ecommerce-streaming.git  
 cd ecommerce-streaming
 
 ### 2. Deploy Infrastructure
-terraform init
+terraform init  
 terraform apply -var="alert_email=your-email@example.com"
 
 ### 3. Generate Events
