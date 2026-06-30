@@ -3,7 +3,14 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
-from pyspark.sql.functions import col, countDistinct, count, sum as spark_sum, avg, round as spark_round
+from pyspark.sql.functions import (
+    col,
+    countDistinct,
+    sum as spark_sum,
+    avg,
+    round as spark_round,
+    when
+)
 
 args = getResolvedOptions(sys.argv, ['JOB_NAME', 'SOURCE_PATH', 'TARGET_PATH'])
 
@@ -15,49 +22,67 @@ job.init(args['JOB_NAME'], args)
 
 df = spark.read.parquet(args['SOURCE_PATH'])
 
-# Daily sales summary
-sales = (
+if df.rdd.isEmpty():
+    print("No new Silver data to process")
+    job.commit()
+    sys.exit(0)
+
+# ✅ DAILY SALES (Incremental Safe)
+daily_sales = (
     df
     .filter(col("event_type") == "purchase")
     .groupBy("event_date", "category")
     .agg(
-        count("event_id").alias("total_orders"),
+        spark_sum(when(col("event_type") == "purchase", 1).otherwise(0)).alias("total_orders"),
         spark_sum(col("price") * col("quantity")).alias("total_revenue"),
         spark_round(avg(col("price") * col("quantity")), 2).alias("avg_order_value"),
         countDistinct("user_id").alias("unique_buyers")
     )
 )
 
-sales.write.mode("overwrite").partitionBy("event_date").parquet(args['TARGET_PATH'] + "daily_sales/")
+daily_sales.write \
+    .mode("append") \
+    .partitionBy("event_date") \
+    .parquet(args['TARGET_PATH'] + "daily_sales/")
 
-# Product performance
-products = (
+
+# ✅ DAILY PRODUCT PERFORMANCE
+daily_products = (
     df
-    .groupBy("product_id", "product_name", "category")
+    .groupBy("event_date", "product_id", "product_name", "category")
     .agg(
-        count(col("event_type") == "page_view").alias("views"),
-        count(col("event_type") == "add_to_cart").alias("cart_adds"),
-        count(col("event_type") == "purchase").alias("purchases"),
+        spark_sum(when(col("event_type") == "page_view", 1).otherwise(0)).alias("views"),
+        spark_sum(when(col("event_type") == "add_to_cart", 1).otherwise(0)).alias("cart_adds"),
+        spark_sum(when(col("event_type") == "purchase", 1).otherwise(0)).alias("purchases"),
         spark_sum(
-            col("price") * col("quantity")
+            when(col("event_type") == "purchase",
+                 col("price") * col("quantity")
+            ).otherwise(0)
         ).alias("total_revenue")
     )
 )
 
-products.write.mode("overwrite").parquet(args['TARGET_PATH'] + "product_performance/")
+daily_products.write \
+    .mode("append") \
+    .partitionBy("event_date") \
+    .parquet(args['TARGET_PATH'] + "product_performance/")
 
-# User engagement
-users = (
+
+# ✅ DAILY USER ENGAGEMENT
+daily_users = (
     df
-    .groupBy("user_id")
+    .groupBy("event_date", "user_id")
     .agg(
-        count("event_id").alias("total_events"),
+        spark_sum(when(col("event_id").isNotNull(), 1).otherwise(0)).alias("total_events"),
         countDistinct("session_id").alias("total_sessions"),
         countDistinct("product_id").alias("products_interacted"),
-        count(col("event_type") == "purchase").alias("total_purchases")
+        spark_sum(when(col("event_type") == "purchase", 1).otherwise(0)).alias("total_purchases")
     )
 )
 
-users.write.mode("overwrite").parquet(args['TARGET_PATH'] + "user_engagement/")
+daily_users.write \
+    .mode("append") \
+    .partitionBy("event_date") \
+    .parquet(args['TARGET_PATH'] + "user_engagement/")
 
 job.commit()
