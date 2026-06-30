@@ -59,17 +59,13 @@ resource "aws_iam_role_policy_attachment" "glue_service" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
 
-# ──────────────────────────────────────────────
 # Glue Catalog Database
-# ──────────────────────────────────────────────
 
 resource "aws_glue_catalog_database" "ecommerce_db" {
   name = "ecommerce_streaming_db"
 }
 
-# ──────────────────────────────────────────────
 # Bronze → Silver
-# ──────────────────────────────────────────────
 
 resource "aws_s3_object" "glue_script" {
   bucket = aws_s3_bucket.data_lake.id
@@ -104,9 +100,7 @@ resource "aws_glue_job" "bronze_to_silver" {
   }
 }
 
-# ──────────────────────────────────────────────
 # Silver → Gold
-# ──────────────────────────────────────────────
 
 resource "aws_s3_object" "gold_script" {
   bucket = aws_s3_bucket.data_lake.id
@@ -126,7 +120,7 @@ resource "aws_glue_job" "silver_to_gold" {
 
   default_arguments = {
     "--job-language"        = "python"
-    "--job-bookmark-option" = "job-bookmark-disable"
+    "--job-bookmark-option" = "job-bookmark-enable"
     "--SOURCE_PATH"         = "s3://${aws_s3_bucket.data_lake.id}/silver/events/"
     "--TARGET_PATH"         = "s3://${aws_s3_bucket.data_lake.id}/gold/"
     "--TempDir"             = "s3://${aws_s3_bucket.data_lake.id}/tmp/"
@@ -141,9 +135,7 @@ resource "aws_glue_job" "silver_to_gold" {
   }
 }
 
-# ──────────────────────────────────────────────
 # Gold Crawler (makes gold tables queryable in Athena)
-# ──────────────────────────────────────────────
 
 resource "aws_glue_crawler" "gold_crawler" {
   database_name = aws_glue_catalog_database.ecommerce_db.name
