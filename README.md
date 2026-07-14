@@ -63,8 +63,8 @@ After the gold crawler catalogs the output, the three gold tables are immediatel
 ## Deployment
 
 ### 1. Clone the Repo
-git clone https://github.com/<your-username>/ecommerce-streaming.git  
-cd ecommerce-streaming
+git clone https://github.com/EdanShim99/ecommerce-streaming-pipeline.git
+cd ecommerce-streaming-pipeline
 
 ### 2. Deploy Infrastructure
 terraform init  
